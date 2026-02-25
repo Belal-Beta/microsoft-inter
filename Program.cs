@@ -8,15 +8,16 @@ namespace contact_Manager
     {
         static void Main(string[] args)
         {
-            DateTime today = DateTime.Now;
-            Console.WriteLine(today.ToString());
+            
+            clsUser currentUser = new clsUser("C:\\Users\\belal\\source\\repos\\contact indexing service\\contacts.txt");
+            currentUser.start();
         }
     }
 
     class clsUser
     {
-        private string _ContactPath;
-        private const string seperator = "#//#";
+        private readonly string _ContactPath;
+        private const string SEPERATOR = "#//#";
         class clsContact : IComparable<clsContact>
         {
             private static int IDSetter = 1;
@@ -36,7 +37,7 @@ namespace contact_Manager
                 IDSetter++;
                 this.Name = name;
                 this.Email = email;
-                while (long.TryParse(phoneNumber, out long temp))
+                while (!long.TryParse(phoneNumber, out long temp))
                 {
                     phoneNumber = Console.ReadLine();
                 }
@@ -65,18 +66,18 @@ namespace contact_Manager
         }
         private SortedSet<clsContact> _contacts;
         private delegate bool Filter(clsContact contact);
-        private void ViewContactsByName()
+        private  void ViewContactsByName()
         {
             string name = Console.ReadLine();
             ListAllContactsWithCondition(c => c.Name.Contains(name, StringComparison.OrdinalIgnoreCase));
         }
-        private void ViewContactsByEmail()
+        private  void ViewContactsByEmail()
         {
             string email = Console.ReadLine();
 
             ListAllContactsWithCondition(c => c.Email.Contains(email, StringComparison.OrdinalIgnoreCase));
         }
-        private void ViewContactsByPhoneNumber()
+        private  void ViewContactsByPhoneNumber()
         {
             string phoneNumber = Console.ReadLine();
             ListAllContactsWithCondition(c => c.PhoneNumber.Contains(phoneNumber));
@@ -91,8 +92,9 @@ namespace contact_Manager
                 string[] lines = File.ReadAllLines(this._ContactPath);
                 foreach (string line in lines)
                 {
-                    var contactInfo = line.Split(seperator);
+                    var contactInfo = line.Split(SEPERATOR);
                     this._contacts.Add(new clsContact(contactInfo[1], contactInfo[2], contactInfo[3], int.Parse(contactInfo[0]), DateTime.Parse(contactInfo[4])));
+                    //name#//#email#//#phonenumber#//#ID#//#Date
                 }
             }
             else
@@ -100,7 +102,7 @@ namespace contact_Manager
                 File.Create(_ContactPath).Close();
             }
         }
-        private clsContact FindContact(clsContact contact)
+        private  clsContact FindContact(clsContact contact)
         {
             if (this._contacts.TryGetValue(contact, out clsContact found))
             {
@@ -112,7 +114,7 @@ namespace contact_Manager
                 return null;
             }
         }
-        private clsContact GetContact()
+        private  clsContact GetContact()
         {
             string name, email, phoneNumber;
             Console.Write("please enter the name of the new contact: ");
@@ -123,7 +125,7 @@ namespace contact_Manager
             email = Console.ReadLine();
             return new clsContact(name, email, phoneNumber);
         }
-        private void ListAllContactsWithCondition(Filter filter)
+        private  void ListAllContactsWithCondition(Filter filter)
         {
             foreach (var contact in _contacts)
             {
@@ -133,12 +135,12 @@ namespace contact_Manager
                 }
             }
         }
-        public void AddNewContact()
+        private void AddNewContact()
         {
             var contact = this.GetContact();
             this._contacts.Add(contact);
         }
-        public void EditContact()
+        private void EditContact()
         {
             var TargetContact = this.GetContact();
             TargetContact = this.FindContact(TargetContact);
@@ -148,7 +150,7 @@ namespace contact_Manager
                 TargetContact = NewContactInfo;
             }
         }
-        public void DeleteContact()
+        private void DeleteContact()
         {
             var TargetContact = this.GetContact();
             TargetContact = this.FindContact(TargetContact);
@@ -157,7 +159,7 @@ namespace contact_Manager
                 this._contacts.Remove(TargetContact);
             }
         }
-        public void SearchContact()
+        private void SearchContact()
         {
             var searched = this.GetContact();
             searched = this.FindContact(searched);
@@ -166,7 +168,7 @@ namespace contact_Manager
                 Console.WriteLine(searched.ToString());
             }
         }
-        public void ViewContact()
+        private void ViewContact()
         {
             var TargetContact = this.GetContact();
             TargetContact = this.FindContact(TargetContact);
@@ -175,11 +177,11 @@ namespace contact_Manager
                 TargetContact.ViewContactDetails();
             }
         }
-        public void ViewAllContacts()
+        private void ViewAllContacts()
         {
             ListAllContactsWithCondition(c => true);
         }
-        public void filterContacts()
+        private void filterContacts()
         {
             Console.Write("1-filter by name.");
             Console.Write("2-filter by email.");
@@ -210,6 +212,86 @@ namespace contact_Manager
                 default:
                     break;
             }
+        }
+        private void printMainMinue()
+        {
+            Console.WriteLine("===Main Minue===");
+            Console.WriteLine("1)add new contact");
+            Console.WriteLine("2)edit contact");
+            Console.WriteLine("3)delete contact");
+            Console.WriteLine("4)view contact");
+            Console.WriteLine("5)list all contact");
+            Console.WriteLine("6)search contact");
+            Console.WriteLine("7)filter contact");
+            Console.WriteLine("8)save contact");
+            Console.WriteLine("9)Exit contact");
+            Console.WriteLine("================");
+        }
+        private void save()
+        {
+            foreach (var c in _contacts)
+            {
+                string line=c.Name+SEPERATOR+c.Email+ SEPERATOR + c.PhoneNumber+ SEPERATOR + c.ID+ SEPERATOR + c.CreationDate;
+                File.AppendAllText(_ContactPath, line);
+            }
+        }
+        public void start()
+        {
+            do
+            {
+                printMainMinue();
+                int choise = 10;
+                bool isValid = false;
+                while (!isValid || choise > 9 || choise < 1)
+                {
+                    Console.Write("please enter the number of your choise: ");
+                    string input = Console.ReadLine();
+                    isValid = int.TryParse(input, out choise);
+                    if (!isValid)
+                    {
+                        Console.WriteLine("Invalid input! Please enter a valid integer.");
+                    }
+                }
+                switch (choise)
+                {
+                    case 1:
+                        this.AddNewContact();
+                        break;
+                    case 2:
+                        this.EditContact();
+                        break;
+                    case 3:
+                        this.DeleteContact();
+                        break;
+                    case 4:
+                        this.ViewContact();
+                        break;
+                    case 5:
+                        this.ViewAllContacts();
+                        break;
+                    case 6:
+                        this.SearchContact();
+                        break;
+                    case 7:
+                        this.filterContacts();
+                        break;
+                    case 8:
+                        this.save();
+                        break;
+                    case 9:
+                        Console.Write("do you want to save changes [y/n]: ");
+                        char chiose =Convert.ToChar(Console.ReadKey());
+                        if (chiose == 'y')
+                        {
+                            this.save();
+                        }
+                        return;
+                        break;
+                    default:
+                        break;
+                }
+            }
+            while (true);
         }
     }
 }
